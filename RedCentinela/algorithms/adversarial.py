@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from algorithms.evaluation import evaluation_function
+from algorithms.evaluation import base_evaluation_function
 from world.game_state import GameState
 
 
@@ -21,6 +21,33 @@ class MultiAgentSearchAgent(ABC):
 class MinimaxAgent(MultiAgentSearchAgent):
     """Agente Minimax para el defensor MAX frente al intruso MIN."""
 
+    def minimax(self, state: GameState, agent_index, depth):
+      self.nodes_evaluated +=1
+      if state.is_win():
+        return 1000
+      elif state.is_lose():
+        return -1000
+      elif depth == 0:
+        return base_evaluation_function(state)
+      else:
+          actions = state.get_legal_actions(agent_index)
+          if agent_index == 0:
+            best_value = -float("inf")
+          elif agent_index == 1 :
+            best_value = float("inf")
+          
+          for action in actions:
+            successor = state.generate_successor(agent_index, action)
+            next_agent = (agent_index + 1) % state.get_num_agents()
+            value = self.minimax(successor, next_agent, depth - 1)
+            if agent_index == 0 and value>best_value:
+              best_value = value
+            elif agent_index == 1 and value<best_value:
+              best_value=value
+      return best_value
+          
+        
+      
     def get_action(self, state: GameState) -> str | None:
         """
         Retorna la acción del defensor con mayor valor Minimax.
@@ -40,8 +67,22 @@ class MinimaxAgent(MultiAgentSearchAgent):
         - Reinicie las métricas y cuente una vez cada estado procesado, incluida
           la raíz. Retorne la acción de MAX y conserve la primera en los empates.
         """
-        # TODO: Add your code here
-        raise NotImplementedError("Punto 4: implemente MinimaxAgent.get_action")
+        self.nodes_evaluated = 1
+        best_value = -float("inf")
+        actions = state.get_legal_actions(0)
+        if actions :
+          best_action = actions[0]
+          
+          for action in actions:
+            successor = state.generate_successor(0, action)
+            value = self.minimax(successor, 1, self.depth-1)
+            
+            if value > best_value:
+              best_value = value
+              best_action = action
+          return best_action
+        else:
+          return None
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
