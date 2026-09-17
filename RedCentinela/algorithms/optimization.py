@@ -15,8 +15,8 @@ def configuration_score(
     - Use problem.score_components(configuration); ya retorna cobertura,
       redundancia y exposición en ese orden.
     """
-    # TODO: Add your code here
-    raise NotImplementedError("Punto 1: implemente configuration_score")
+    coverage, redundancy, exposure = problem.score_components(configuration)
+    return coverage - redundancy - exposure
 
 
 def hill_climbing(
@@ -38,8 +38,50 @@ def hill_climbing(
     - Inicialice los historiales con la configuración inicial y agregue solo las
       mejoras aceptadas antes de retornar el OptimizationResult.
     """
-    # TODO: Add your code here
-    raise NotImplementedError("Punto 1: implemente hill_climbing")
+    if not problem.is_valid(initial_configuration):
+        raise ValueError("La configuración inicial debe ser válida")
+
+    current = initial_configuration
+    current_score = configuration_score(problem, current)
+
+    evaluations = 1
+    iterations = 0
+
+    history = [current]
+    score_history = [current_score]
+
+    for _ in range(max_iterations):
+        neighbors = problem.neighbors(current)
+
+        best_neighbor = None
+        best_score = float("-inf")
+
+        for neighbor in neighbors:
+            score = configuration_score(problem, neighbor)
+            evaluations += 1
+
+            if score > best_score:
+                best_neighbor = neighbor
+                best_score = score
+
+        if best_score <= current_score:
+            break
+
+        current = best_neighbor
+        current_score = best_score
+
+        iterations += 1
+        history.append(current)
+        score_history.append(current_score)
+
+    return OptimizationResult(
+        best_configuration=current,
+        best_score=current_score,
+        evaluations=evaluations,
+        iterations=iterations,
+        history=history,
+        score_history=score_history,
+    )
 
 
 def cooling_schedule(initial_temperature: float, cooling_rate: float, iteration: int) -> float:
