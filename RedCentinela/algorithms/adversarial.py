@@ -41,61 +41,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
           la raíz. Retorne la acción de MAX y conserve la primera en los empates.
         """
 
-        self.nodes_evaluated = 0
-
-        def minimax(current_state: GameState, depth: int, agent_index: int) -> float:
-            self.nodes_evaluated += 1
-
-            if current_state.is_win() or current_state.is_lose() or depth <= 0:
-                return evaluation_function(current_state)
-
-            actions = current_state.get_legal_actions(agent_index)
-            if not actions:
-                return evaluation_function(current_state)
-
-            next_agent = (agent_index + 1) % current_state.get_num_agents()
-
-            if agent_index == 0:
-                best_value = float("-inf")
-                for action in actions:
-                    successor = current_state.generate_successor(agent_index, action)
-                    value = minimax(successor, depth - 1, next_agent)
-                    if value > best_value:
-                        best_value = value
-                return best_value
-
-            best_value = float("inf")
-            for action in actions:
-                successor = current_state.generate_successor(agent_index, action)
-                value = minimax(successor, depth - 1, next_agent)
-                if value < best_value:
-                    best_value = value
-            return best_value
-
-        self.nodes_evaluated += 1
-
-        if state.is_win() or state.is_lose():
-            return None
-
-        actions = state.get_legal_actions(0)
-        if not actions:
-            return None
-
-        best_action = actions[0]
-        best_value = float("-inf")
-        next_agent = 1 % state.get_num_agents()
-
-        for action in actions:
-            successor = state.generate_successor(0, action)
-            value = minimax(successor, self.depth - 1, next_agent)
-
-            if value > best_value:
-                best_value = value
-                best_action = action
-
-        return best_action
-                    
-
         
 
 
