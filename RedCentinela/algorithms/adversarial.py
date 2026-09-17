@@ -102,5 +102,90 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         - En MAX actualice alpha y corte si valor >= beta; en MIN actualice beta
           y corte si valor <= alpha.
         """
-        # TODO: Add your code here
-        raise NotImplementedError("Punto 5: implemente AlphaBetaAgent.get_action")
+
+
+        
+        self.nodes_evaluated = 0
+
+        def alpha_beta(current_state, depth, agent_index, alpha, beta):
+            self.nodes_evaluated += 1
+
+            if current_state.is_win() or current_state.is_lose() or depth <= 0:
+                return evaluation_function(current_state)
+
+            actions = current_state.get_legal_actions(agent_index)
+            if not actions:
+                return evaluation_function(current_state)
+
+            next_agent = (agent_index + 1) % current_state.get_num_agents()
+
+            # Defensor MAX
+            if agent_index == 0:
+                value = float("-inf")
+
+                for action in actions:
+                    successor = current_state.generate_successor(agent_index, action)
+                    value = max(
+                        value,
+                        alpha_beta(successor, depth - 1, next_agent, alpha, beta)
+                    )
+
+                    if value >= beta:
+                        return value
+
+                    alpha = max(alpha, value)
+
+                return value
+
+            # Intruso MIN
+            value = float("inf")
+
+            for action in actions:
+                successor = current_state.generate_successor(agent_index, action)
+                value = min(
+                    value,
+                    alpha_beta(successor, depth - 1, next_agent, alpha, beta)
+                )
+
+                if value <= alpha:
+                    return value
+
+                beta = min(beta, value)
+
+            return value
+
+        # La raíz también cuenta
+        self.nodes_evaluated += 1
+
+        if state.is_win() or state.is_lose():
+            return None
+
+        actions = state.get_legal_actions(0)
+        if not actions:
+            return None
+
+        best_action = actions[0]
+        best_value = float("-inf")
+
+        alpha = float("-inf")
+        beta = float("inf")
+        next_agent = 1 % state.get_num_agents()
+
+        for action in actions:
+            successor = state.generate_successor(0, action)
+
+            value = alpha_beta(
+                successor,
+                self.depth - 1,
+                next_agent,
+                alpha,
+                beta
+            )
+
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+            alpha = max(alpha, best_value)
+
+        return best_action
