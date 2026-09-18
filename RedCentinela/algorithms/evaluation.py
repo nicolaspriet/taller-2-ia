@@ -38,5 +38,32 @@ def evaluation_function(state: GameState) -> float:
     if state.is_win() or state.is_lose():
         return base_evaluation_function(state)
 
-    # TODO: Add your code here
-    return base_evaluation_function(state)
+    layout = state.layout
+    defender = state.defender_position
+    intruder = state.intruder_position
+    pending = state.pending_terminals
+
+    total_terminals = len(layout.critical_nodes)
+    activated = total_terminals - len(pending)
+
+    max_distance = layout.height + layout.width
+
+    value = 100.0 * activated
+
+    if pending:
+        goal_distance = min(
+            layout.distance(defender, terminal) for terminal in pending
+        )
+        if goal_distance == float("inf"):
+            goal_distance = max_distance
+        value -= 25.0 * goal_distance / max_distance
+
+    threat_distance = layout.distance(defender, intruder)
+    if threat_distance == float("inf"):
+        threat_distance = max_distance
+    value += 50.0 * threat_distance / max_distance
+
+    mobility = len(state.get_legal_actions(0))
+    value += 2.0 * mobility
+
+    return max(-999.0, min(999.0, value))

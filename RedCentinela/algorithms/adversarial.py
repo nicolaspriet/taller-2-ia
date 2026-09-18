@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from algorithms.evaluation import base_evaluation_function
+from algorithms.evaluation import base_evaluation_function, evaluation_function
 from world.game_state import GameState
 
 
@@ -28,7 +28,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
       elif state.is_lose():
         return -1000
       elif depth == 0:
-        return base_evaluation_function(state)
+        return evaluation_function(state)
       else:
           actions = state.get_legal_actions(agent_index)
           if agent_index == 0:
