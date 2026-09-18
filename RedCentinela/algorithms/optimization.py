@@ -90,9 +90,7 @@ def cooling_schedule(initial_temperature: float, cooling_rate: float, iteration:
 
     Esta función se invoca desde simulated_annealing en cada iteración.
     """
-    # TODO: Add your code here
-    raise NotImplementedError("Punto 2: implemente cooling_schedule")
-
+    return initial_temperature * (cooling_rate**iteration)
 
 def simulated_annealing(
     problem: SmartGridOptimizationProblem,
@@ -121,8 +119,56 @@ def simulated_annealing(
     rng = rng or random.Random()
     minimum_temperature = 1e-9
 
-    # TODO: Add your code here
-    raise NotImplementedError("Punto 2: implemente simulated_annealing")
+    if not problem.is_valid(initial_configuration):
+        raise ValueError("La configuración inicial debe ser válida")
+
+    current = initial_configuration
+    current_score = configuration_score(problem, current)
+
+    best_configuration = current
+    best_score = current_score
+
+    evaluations = 1
+    iterations = 0
+
+    history = [current]
+    score_history = [current_score]
+
+    for t in range(max_iterations):
+        temperature = cooling_schedule(initial_temperature, cooling_rate, t)
+        if temperature < minimum_temperature:
+            break
+
+        neighbors = problem.neighbors(current)
+        if not neighbors:
+            break
+
+        candidate = rng.choice(neighbors)
+        candidate_score = configuration_score(problem, candidate)
+        evaluations += 1
+
+        delta = candidate_score - current_score
+
+        if delta > 0 or rng.random() < math.exp(delta / temperature):
+            current = candidate
+            current_score = candidate_score
+
+        if current_score > best_score:
+            best_configuration = current
+            best_score = current_score
+
+        iterations += 1
+        history.append(current)
+        score_history.append(current_score)
+
+    return OptimizationResult(
+        best_configuration=best_configuration,
+        best_score=best_score,
+        evaluations=evaluations,
+        iterations=iterations,
+        history=history,
+        score_history=score_history,
+    )
 
 
 def one_point_crossover(
